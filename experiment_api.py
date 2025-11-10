@@ -45,19 +45,22 @@ def run_simulations(agent_specification: List[Dict[str, Any]],
         ExperimentSummary with aggregated results
     """
     
-    # Create agents from specification
+    # Create agents from specification - INTERLEAVED for fairness
     agents = []
-    for spec in agent_specification:
-        policy_name = spec["name"]
-        policy_template = spec["policy"]
-        num_agents = spec["number"]
-        
-        for i in range(num_agents):
-            agent_id = f"{policy_name}_{i+1}"
-            # Create a new policy instance for each agent to avoid shared state
-            policy = copy.deepcopy(policy_template)
-            agent = Agent(agent_id, policy)
-            agents.append(agent)
+    max_agents_per_policy = max(spec["number"] for spec in agent_specification)
+    
+    # Interleave agents from different policies
+    for i in range(max_agents_per_policy):
+        for spec in agent_specification:
+            if i < spec["number"]:  # Only add if this policy has this many agents
+                policy_name = spec["name"]
+                policy_template = spec["policy"]
+                
+                agent_id = f"{policy_name}_{i+1}"
+                # Create a new policy instance for each agent to avoid shared state
+                policy = copy.deepcopy(policy_template)
+                agent = Agent(agent_id, policy)
+                agents.append(agent)
     
     # Track results
     efficiency_scores = []
