@@ -1,0 +1,477 @@
+---
+title: "MAS statistical analysis"
+output: html_document
+date: "2025-11-25"
+---
+
+#MAS statistical analysis
+
+## Loading the data
+
+This simulation result is csv file generated from experiment result in python (project_experiment.ipynb)
+
+```{r}
+
+#csv is in the git repo, please adjust it to your file path
+
+Optimal_stopping <- read.csv("/Users/keiishikura/Library/Mobile Documents/com~apple~CloudDocs/Multi-agent system Actual Experiment/multi_agent_optimal_stopping/simulation_results.csv", header = TRUE)
+
+head(Optimal_stopping)
+
+names(Optimal_stopping)
+
+
+```
+## Converting competition level into a numeric variables.
+
+For ex. "Competition level 0.5" has been converted to 0.5
+
+```{r}
+
+
+library(dplyr)
+
+Optimal_stopping$competition <- as.numeric(gsub("Competition ", "", Optimal_stopping$competition_level))
+
+head(Optimal_stopping$competition)
+
+```
+##  Organizing data into CSV
+
+In this section, we use the Optimal_stopping csv file that we have opened in previous section to extract information for
+acorss all combination of strategy and competition level. 
+
+### Extracting information for policy match rate 
+
+```{r}
+
+# Find unique competition level then sort it in order (0.5 -> 20), for policy and competition respectively
+comp_vals <- sort(unique(Optimal_stopping$competition))
+pol_vals  <- unique(Optimal_stopping$policy)
+
+#length of the competition value and policy, deduct numbers of rows necessary from it
+n_comp <- length(comp_vals)
+n_pol  <- length(pol_vals)
+n_rows <- n_comp * n_pol
+
+#create empty vectors of the length necessary for competition level, strategy for each row, mean of dependent variable, sd, sample_size per 
+
+#for competition level
+comp_vec    <- numeric(n_rows)
+#for strategy of each row
+policy_vec  <- character(n_rows)
+#mean of dependent variable
+mean_vec    <- numeric(n_rows)
+#standard deviation (sd)
+sd_vec      <- numeric(n_rows)
+#sample size per condition
+n_vec       <- integer(n_rows)
+#standard error
+se_vec      <- numeric(n_rows)
+#confidence interval lower boundary
+ci_low_vec  <- numeric(n_rows)
+#confidence interval higher boundary
+ci_high_vec <- numeric(n_rows)
+
+#start at row one for the index
+row_i <- 1
+
+#we iterate for all the competition value and policy value
+for (c in comp_vals) {
+  for (p in pol_vals) {
+    
+    #Select only rows with the specific competition level and strategy.
+    specific_val <- Optimal_stopping[Optimal_stopping$competition == c & Optimal_stopping$policy == p, ]
+    
+    #compute each value, match rate, mean, sd, length of that specifc val, standard error, ci_low, ci_high
+    x <- specific_val$policy_match_rate
+    m  <- mean(x, na.rm = TRUE)
+    s  <- sd(x, na.rm = TRUE)
+    n  <- length(x)
+    se <- s/sqrt(n)
+    ci_low  <- m - 1.96 * se
+    ci_high <- m + 1.96 * se
+    
+    #put it in the empty vectors created above
+    comp_vec[row_i]    <- c
+    policy_vec[row_i]  <- p
+    mean_vec[row_i]    <- m
+    sd_vec[row_i]      <- s
+    n_vec[row_i]       <- n
+    se_vec[row_i]      <- se
+    ci_low_vec[row_i]  <- ci_low
+    ci_high_vec[row_i] <- ci_high
+    
+    row_i <- row_i + 1
+  }
+}
+
+#Encode the vector into data from for csv file
+match_tbl <- data.frame(competition = comp_vec, policy = policy_vec, mean_match = mean_vec, sd_match = sd_vec, n = n_vec,
+                        se_match = se_vec, ci_low = ci_low_vec, ci_high = ci_high_vec)
+
+write.csv(match_tbl, "summary_match_rate.csv", row.names = FALSE)
+
+```
+
+### Extracting information for average quality of the house
+
+```{r}
+
+# Find unique competition level then sort it in order (0.5 -> 20), for policy and competition respectively
+comp_vals <- sort(unique(Optimal_stopping$competition))
+pol_vals  <- unique(Optimal_stopping$policy)
+
+#length of the competition value and policy, deduct numbers of rows necessary from it
+n_comp <- length(comp_vals)
+n_pol  <- length(pol_vals)
+n_rows <- n_comp * n_pol
+
+#create empty vectors of the length necessary for competiton level, strateg for each row, mean of dependent variable, sd, sample_size per 
+
+#for competition level
+comp_vec    <- numeric(n_rows)
+#for strategy of each row
+policy_vec  <- character(n_rows)
+#mean of dependent variable
+mean_vec    <- numeric(n_rows)
+#standard deviation (sd)
+sd_vec      <- numeric(n_rows)
+#sample size per condition
+n_vec       <- integer(n_rows)
+#standard error
+se_vec      <- numeric(n_rows)
+#confidence interval lower boundary
+ci_low_vec  <- numeric(n_rows)
+#confidence interval higher boundary
+ci_high_vec <- numeric(n_rows)
+
+#start at row one for the index
+row_i <- 1
+
+#we iterate for all the competition value and policy value
+for (c in comp_vals) {
+  for (p in pol_vals) {
+    
+    #Select only rows with the specific competition level and strategy.
+    specific_val <- Optimal_stopping[Optimal_stopping$competition == c & Optimal_stopping$policy == p, ]
+    
+    #compute each value, avg_quality, mean, sd, length of that specifc val, standard error, ci_low, ci_high
+    x <- specific_val$avg_quality
+    m  <- mean(x, na.rm = TRUE)
+    s  <- sd(x, na.rm = TRUE)
+    n  <- length(x)
+    se <- s/sqrt(n)
+    ci_low  <- m - 1.96 * se
+    ci_high <- m + 1.96 * se
+    
+    #put it in the empty vectors created above
+    comp_vec[row_i]    <- c
+    policy_vec[row_i]  <- p
+    mean_vec[row_i]    <- m
+    sd_vec[row_i]      <- s
+    n_vec[row_i]       <- n
+    se_vec[row_i]      <- se
+    ci_low_vec[row_i]  <- ci_low
+    ci_high_vec[row_i] <- ci_high
+    
+    row_i <- row_i + 1
+  }
+}
+
+#Encode the vector into data from for csv file
+quality_tbl <- data.frame(competition = comp_vec, policy = policy_vec, mean_quality = mean_vec, sd_quality = sd_vec, n = n_vec,
+                        se_quality = se_vec, ci_low = ci_low_vec, ci_high = ci_high_vec)
+
+write.csv(quality_tbl, "summary_avg_quality.csv", row.names = FALSE)
+
+```
+
+
+### Extracting information for average rounds to match
+
+```{r}
+
+
+# Find unique competition level then sort it in order (0.5 -> 20), for policy and competition respectively
+comp_vals <- sort(unique(Optimal_stopping$competition))
+pol_vals  <- unique(Optimal_stopping$policy)
+
+#length of the competition value and policy, deduct numbers of rows necessary from it
+n_comp <- length(comp_vals)
+n_pol  <- length(pol_vals)
+n_rows <- n_comp * n_pol
+
+#create empty vectors of the length necessary for competition level, strategy for each row, mean of dependent variable, sd, sample_size per 
+
+#for competition level
+comp_vec    <- numeric(n_rows)
+#for strategy of each row
+policy_vec  <- character(n_rows)
+#mean of dependent variable
+mean_vec    <- numeric(n_rows)
+#standard deviation (sd)
+sd_vec      <- numeric(n_rows)
+#sample size per condition
+n_vec       <- integer(n_rows)
+#standard error
+se_vec      <- numeric(n_rows)
+#confidence interval lower boundary
+ci_low_vec  <- numeric(n_rows)
+#confidence interval higher boundary
+ci_high_vec <- numeric(n_rows)
+
+#start at row one for the index
+row_i <- 1
+
+#we iterate for all the competition value and policy value
+for (c in comp_vals) {
+  for (p in pol_vals) {
+    
+    #Select only rows with the specific competition level and strategy.
+    specific_val <- Optimal_stopping[Optimal_stopping$competition == c & Optimal_stopping$policy == p, ]
+    
+    #compute each value, match rate, mean, sd, length of that specifc val, standard error, ci_low, ci_high
+    x <- specific_val$avg_rounds_matched
+    m  <- mean(x, na.rm = TRUE)
+    s  <- sd(x, na.rm = TRUE)
+    n  <- length(x)
+    se <- s/sqrt(n)
+    ci_low  <- m - 1.96 * se
+    ci_high <- m + 1.96 * se
+    
+    #put it in the empty vectors created above
+    comp_vec[row_i]    <- c
+    policy_vec[row_i]  <- p
+    mean_vec[row_i]    <- m
+    sd_vec[row_i]      <- s
+    n_vec[row_i]       <- n
+    se_vec[row_i]      <- se
+    ci_low_vec[row_i]  <- ci_low
+    ci_high_vec[row_i] <- ci_high
+    
+    row_i <- row_i + 1
+  }
+}
+
+#Encode the vector into data from for csv file
+rounds_tbl <- data.frame(competition = comp_vec, policy = policy_vec, mean_rounds = mean_vec, sd_rounds = sd_vec, n = n_vec,
+                        se_rounds = se_vec, ci_low= ci_low_vec, ci_high = ci_high_vec)
+
+
+write.csv(rounds_tbl, "summary_avg_rounds_matched.csv", row.names = FALSE)
+
+
+
+```
+
+
+## Table implemented for LaTeX
+
+Here we create table to implement for the LaTeX
+
+### Table for mean match rate
+
+```{r}
+
+#Load xtable library
+library(xtable)
+
+#Round beforehand to put it to appropriate decimal place for visibility
+match_tbl_for_LaTeX <- match_tbl
+match_tbl_for_LaTeX$mean_match <- round(match_tbl_for_LaTeX$mean_match, 3)
+match_tbl_for_LaTeX$sd_match <- round(match_tbl_for_LaTeX$sd_match, 3)
+match_tbl_for_LaTeX$se_match <- round(match_tbl_for_LaTeX$se_match, 3)
+match_tbl_for_LaTeX$ci_low <- round(match_tbl_for_LaTeX$ci_low, 3)
+match_tbl_for_LaTeX$ci_high <- round(match_tbl_for_LaTeX$ci_high, 3)
+
+# Create LaTeX table and save to file
+match_tex <- xtable(match_tbl_for_LaTeX, caption = "Mean match rate by strategy and competition level.", label = "tab:match_rate")
+
+print(match_tex, file = "table_match_rate.tex", include.rownames = FALSE, booktabs = TRUE)
+
+```
+
+### Table for average quality
+
+```{r}
+
+library(xtable)
+
+#Round beforehand to put it to appropriate decimal place for visibility
+quality_tbl_for_LaTeX <- quality_tbl
+quality_tbl_for_LaTeX$mean_quality <- round(quality_tbl_for_LaTeX$mean_quality, 3)
+quality_tbl_for_LaTeX$sd_quality <- round(quality_tbl_for_LaTeX$sd_quality, 3)
+quality_tbl_for_LaTeX$se_quality <- round(quality_tbl_for_LaTeX$se_quality, 3)
+quality_tbl_for_LaTeX$ci_low <- round(quality_tbl_for_LaTeX$ci_low, 3)
+quality_tbl_for_LaTeX$ci_high <- round(quality_tbl_for_LaTeX$ci_high, 3)
+
+# Create LaTeX table and save to file
+quality_tex <- xtable(quality_tbl_for_LaTeX, caption = "Average matched-house quality by strategy and competition level.", label = "tab:quality")
+
+print(quality_tex, file = "table_quality.tex", include.rownames = FALSE, booktabs = TRUE)
+
+```
+
+### Table for average quality
+
+```{r}
+
+library(xtable)
+
+#Round beforehand to put it to appropriate decimal place for visibility
+rounds_tbl_for_LaTeX <- rounds_tbl
+rounds_tbl_for_LaTeX$mean_rounds <- round(rounds_tbl_for_LaTeX$mean_rounds, 3)
+rounds_tbl_for_LaTeX$sd_rounds <- round(rounds_tbl_for_LaTeX$sd_rounds, 3)
+rounds_tbl_for_LaTeX$se_rounds <- round(rounds_tbl_for_LaTeX$se_rounds, 3)
+rounds_tbl_for_LaTeX$ci_low <- round(rounds_tbl_for_LaTeX$ci_low, 3)
+rounds_tbl_for_LaTeX$ci_high  <- round(rounds_tbl_for_LaTeX$ci_high, 3)
+
+# Create LaTeX table and save to file
+rounds_tex <- xtable(rounds_tbl_for_LaTeX, caption = "Average rounds to match by strategy and competition level.", label = "tab:rounds" )
+
+# Save to a tex file
+print(rounds_tex, file = "table_rounds.tex", include.rownames = FALSE, booktabs = TRUE)
+
+```
+
+## Two way ANOVA test
+
+We conduct a two-way ANOVA test to test whether strategy (factor A) and different competition level (factor B) has significant effects on match rate, average house quality, and rounds to match. 
+
+### Two way ANOVA for match rate
+
+```{r}
+#Two way ANOVA test:
+
+# We need to change competition level and different strategy into a categorical variable for ANOVA
+Optimal_stopping$competition_f <- factor(Optimal_stopping$competition)
+Optimal_stopping$policy <- factor(Optimal_stopping$policy)
+
+anova_match <- aov(policy_match_rate ~ competition_f * policy, data = Optimal_stopping)
+
+summary(anova_match)
+
+```
+
+### Two way ANOVA for average quality of house
+```{r}
+
+anova_quality <- aov(avg_quality ~ competition_f * policy, data = Optimal_stopping)
+
+summary(anova_quality)
+
+
+
+```
+
+### Two way ANOVA for average rounds to match
+```{r}
+
+anova_rounds <- aov(avg_rounds_matched ~ competition_f * policy,data = Optimal_stopping)
+
+summary(anova_rounds)
+
+```
+
+## Create table for two way ANOVA test
+
+We create table of two way ANOVA test for LaTeX
+
+### Table for match rate
+```{r}
+
+#anova result
+sm_match <- summary(anova_match)
+
+#convert it to data frame
+match_df <- as.data.frame(sm_match[[1]])
+match_df$Effect <- rownames(match_df)
+
+#create column names for table
+match_tbl <- match_df[, c("Effect", "Df", "F value", "Pr(>F)")]
+colnames(match_tbl) <- c("Effect", "df", "F", "p_raw")
+
+# Rounding df and F
+match_tbl$df <- round(match_tbl$df, 2)
+match_tbl$F  <- ifelse(is.na(match_tbl$F), NA, round(match_tbl$F, 2))
+
+# Format p-values nicely
+p_num <- match_tbl$p_raw
+match_tbl$p <- ifelse(p_num < 0.001, "< .001", ifelse(p_num < 0.01, "< .01", sprintf("%.3f", p_num)))
+
+#make sure to drop raw numeric p
+match_tbl$p_raw <- NULL  
+
+# Export to LaTeX
+anova_match_tex <- xtable(match_tbl, caption = "Two-way ANOVA for match rate with factors Strategy and Competition.", label = "tab:anova_match_rate")
+
+print(anova_match_tex, file = "anova_match_rate.tex", include.rownames = FALSE, booktabs = TRUE)
+
+```
+
+
+### Table for quality
+
+```{r}
+
+sm_quality <- summary(anova_quality)
+
+#convert it to data frame
+quality_df <- as.data.frame(sm_quality[[1]])
+quality_df$Effect <- rownames(quality_df)
+
+#create column names for table
+quality_tbl <- quality_df[, c("Effect", "Df", "F value", "Pr(>F)")]
+colnames(quality_tbl) <- c("Effect", "df", "F", "p_raw")
+
+# Rounding df and F
+quality_tbl$df <- round(quality_tbl$df, 2)
+quality_tbl$F  <- ifelse(is.na(quality_tbl$F), NA, round(quality_tbl$F, 2))
+
+# Format p-values nicely
+p_num <- quality_tbl$p_raw
+quality_tbl$p <- ifelse(p_num < 0.001, "< .001", ifelse(p_num < 0.01, "< .01", sprintf("%.3f", p_num)))
+
+#make sure to drop raw numeric p
+quality_tbl$p_raw <- NULL
+
+# Export to LaTeX
+anova_quality_tex <- xtable(quality_tbl, caption = "Two-way ANOVA for matched-house quality with factors Strategy and Competition.", label = "tab:anova_quality")
+
+print(anova_quality_tex, file = "anova_quality.tex", include.rownames = FALSE, booktabs = TRUE)
+
+```
+
+
+### Table for average rounds to match
+
+```{r}
+
+sm_rounds <- summary(anova_rounds)
+
+#convert it to data frame
+rounds_df <- as.data.frame(sm_rounds[[1]])
+rounds_df$Effect <- rownames(rounds_df)
+
+#create column names for table
+rounds_tbl <- rounds_df[, c("Effect", "Df", "F value", "Pr(>F)")]
+colnames(rounds_tbl) <- c("Effect", "df", "F", "p_raw")
+
+# Rounding df and F
+rounds_tbl$df <- round(rounds_tbl$df, 2)
+rounds_tbl$F  <- ifelse(is.na(rounds_tbl$F), NA, round(rounds_tbl$F, 2))
+
+# Format p-values nicely
+p_num <- rounds_tbl$p_raw
+rounds_tbl$p <- ifelse(p_num < 0.001, "< .001", ifelse(p_num < 0.01, "< .01", sprintf("%.3f", p_num)))
+
+#make sure to drop raw numeric p
+rounds_tbl$p_raw <- NULL
+
+
+anova_rounds_tex <- xtable(rounds_tbl, caption = "Two-way ANOVA for rounds to match with factors Strategy and Competition.", label = "tab:anova_rounds")
+
+print(anova_rounds_tex, file = "anova_rounds.tex", include.rownames = FALSE,booktabs = TRUE)
+
+```
