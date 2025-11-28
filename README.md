@@ -8,7 +8,7 @@ The **optimal stopping problem** is a classic decision-making challenge where an
 
 This project extends the problem to a **multi-agent setting** where multiple agents with potentially different policies compete for limited resources (houses), creating strategic interactions and market dynamics that don't exist in the single-agent case.
 
-## Key Research Questions
+## Possible Research Questions to Explore With This Repo
 
 - How does the presence of other agents affect the efficiency of different policies?
 - Which policies perform best in competitive multi-agent environments?
@@ -16,6 +16,8 @@ This project extends the problem to a **multi-agent setting** where multiple age
 - What is the trade-off between exploration and exploitation in competitive settings?
 
 ## Project Structure
+
+This repository was build and used in the context of a Multi-Agent Systems course. All the experiments mentioned in our final submission have been executed in: **`project_experiments.ipynb`** 
 
 ### Core Components
 
@@ -38,7 +40,6 @@ This project extends the problem to a **multi-agent setting** where multiple age
 - **`experiment_api.py`** - Simplified API for running experiments with multiple policies
 - **`example_experiment.py`** - Example usage and basic policy comparisons
 - **`example_experiments.ipynb`** - Interactive notebook with detailed experiments
-- **`project_experiments.ipynb`** - Advanced experimental scenarios
 - **`print_summary.py`** - Formatted output for experiment results
 
 ## Quick Start
