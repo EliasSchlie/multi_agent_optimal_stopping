@@ -16,6 +16,16 @@ from environment import Environment
 
 
 @dataclass
+class SimulationResult:
+    """Result from a single simulation run."""
+    simulation_id: int
+    efficiency_score: float
+    match_rate: float
+    rounds_taken: int
+    policy_results: Dict[str, Dict[str, Any]]  # policy_name -> {matches, unmatches, qualities, rounds}
+
+
+@dataclass
 class ExperimentSummary:
     """Summary of multiple experiment runs."""
     num_experiments: int
@@ -23,6 +33,7 @@ class ExperimentSummary:
     match_rates: List[float]
     rounds_taken: List[int]
     policy_stats: Dict[str, Dict[str, Any]]  # policy_name -> {raw data}
+    simulation_results: List[SimulationResult]  # New: per-simulation detailed results
 
 
 def run_simulations(agent_specification: List[Dict[str, Any]], 
@@ -67,6 +78,7 @@ def run_simulations(agent_specification: List[Dict[str, Any]],
     match_rates = []
     rounds_taken = []
     policy_stats = {}
+    simulation_results = []  # New: store per-simulation results
     
     # Initialize policy tracking
     for spec in agent_specification:
@@ -76,7 +88,8 @@ def run_simulations(agent_specification: List[Dict[str, Any]],
             "unmatches": 0,
             "total_agents": spec["number"] * num_experiments,
             "qualities": [],
-            "rounds_to_match": []
+            "rounds_to_match": [],
+            "rounds_all_agents": []
         }
     
     # Run experiments
@@ -94,22 +107,59 @@ def run_simulations(agent_specification: List[Dict[str, Any]],
         
         # Process results
         efficiency_scores.append(result.efficiency_score)
-        match_rates.append(len(result.matched_pairs) / len(agents))
+        match_rate = len(result.matched_pairs) / len(agents)
+        match_rates.append(match_rate)
         rounds_taken.append(result.total_rounds)
         
-        # Track matches
+        # Initialize per-simulation policy results
+        sim_policy_results = {}
+        for spec in agent_specification:
+            policy_name = spec["name"]
+            sim_policy_results[policy_name] = {
+                "matches": 0,
+                "unmatches": 0,
+                "total_agents": spec["number"],
+                "qualities": [],
+                "rounds_to_match": [],
+                "rounds_all_agents": []
+            }
+        
+        # Track matches for this simulation
         for agent, house in result.matched_pairs:
             policy_name = agent.id.rsplit('_', 1)[0]  # Extract policy name safely
             
-            # Update policy stats
+            # Update aggregated policy stats
             policy_stats[policy_name]["matches"] += 1
             policy_stats[policy_name]["qualities"].append(house.quality)
             policy_stats[policy_name]["rounds_to_match"].append(len(agent.seen_houses))
+            policy_stats[policy_name]["rounds_all_agents"].append(len(agent.seen_houses))
+            
+            # Update per-simulation policy results
+            sim_policy_results[policy_name]["matches"] += 1
+            sim_policy_results[policy_name]["qualities"].append(house.quality)
+            sim_policy_results[policy_name]["rounds_to_match"].append(len(agent.seen_houses))
+            sim_policy_results[policy_name]["rounds_all_agents"].append(len(agent.seen_houses))
         
-        # Track unmatched agents
+        # Track unmatched agents for this simulation
         for agent in result.unmatched_agents:
             policy_name = agent.id.rsplit('_', 1)[0]  # Extract policy name safely
+            
+            # Update aggregated policy stats
             policy_stats[policy_name]["unmatches"] += 1
+            policy_stats[policy_name]["rounds_all_agents"].append(len(agent.seen_houses))
+            
+            # Update per-simulation policy results
+            sim_policy_results[policy_name]["unmatches"] += 1
+            sim_policy_results[policy_name]["rounds_all_agents"].append(len(agent.seen_houses))
+        
+        # Store this simulation's results
+        simulation_results.append(SimulationResult(
+            simulation_id=exp_id,
+            efficiency_score=result.efficiency_score,
+            match_rate=match_rate,
+            rounds_taken=result.total_rounds,
+            policy_results=sim_policy_results
+        ))
 
 
     
@@ -119,5 +169,6 @@ def run_simulations(agent_specification: List[Dict[str, Any]],
         efficiency_scores=efficiency_scores,
         match_rates=match_rates,
         rounds_taken=rounds_taken,
-        policy_stats=policy_stats
+        policy_stats=policy_stats,
+        simulation_results=simulation_results
     )
