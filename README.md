@@ -41,6 +41,7 @@ This repository was build and used in the context of a Multi-Agent Systems cours
 - **`example_experiment.py`** - Example usage and basic policy comparisons
 - **`example_experiments.ipynb`** - Interactive notebook with detailed experiments
 - **`print_summary.py`** - Formatted output for experiment results
+- **`project_experiments.ipynb`** - Project Experiment is run here
 
 ## Quick Start
 
