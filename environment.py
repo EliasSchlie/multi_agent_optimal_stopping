@@ -1,3 +1,19 @@
+"""
+Simulation environment for multi-agent optimal stopping problem.
+
+This module provides the Environment class that orchestrates the multi-agent house
+selection simulation. It manages the interaction between agents and houses, handles
+the matching process, and calculates performance metrics.
+
+The environment supports various simulation configurations including different numbers
+of agents and houses, custom matching algorithms, and efficiency calculations based
+on optimal allocation theory.
+
+Classes:
+    SimulationResult: Container for simulation outcomes and metrics
+    Environment: Main simulation orchestrator
+"""
+
 import random
 from typing import List, Tuple, Dict, Optional
 from dataclasses import dataclass

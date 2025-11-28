@@ -1,3 +1,16 @@
+"""
+Agent and Policy classes for multi-agent optimal stopping problem.
+
+This module defines the core agent architecture and policy interface for simulating
+multi-agent house selection scenarios. Agents use policies to make decisions about
+whether to accept or reject house offers based on various factors including the
+current house quality, previously seen houses, and market conditions.
+
+Classes:
+    Policy: Abstract base class for decision-making policies
+    Agent: Represents an individual agent in the simulation
+"""
+
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from .house import House

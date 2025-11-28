@@ -1,3 +1,14 @@
+"""
+Utility functions for displaying experiment results.
+
+This module provides formatted output functions for presenting simulation results
+in a clear, readable format. It includes summary statistics, policy performance
+comparisons, and detailed breakdowns of experimental outcomes.
+
+Functions:
+    print_experiment_summary: Displays comprehensive experiment results
+"""
+
 import numpy as np
 
 

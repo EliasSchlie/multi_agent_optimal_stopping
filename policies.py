@@ -1,3 +1,22 @@
+"""
+Decision-making policies for agents in the optimal stopping problem.
+
+This module implements various strategies that agents can use to decide whether to
+accept or reject house offers. Each policy represents a different approach to the
+optimal stopping problem, from simple greedy strategies to sophisticated statistical
+methods.
+
+Policies included:
+    - GreedyPolicy: Accept the first offer
+    - ThresholdPolicy: Accept offers above a quality threshold
+    - OptimalStoppingPolicy: Classic secretary problem solution with exploration phase
+
+Classes:
+    GreedyPolicy: Always accepts the first house offered
+    ThresholdPolicy: Accepts houses meeting minimum quality threshold
+    OptimalStoppingPolicy: Implements classic optimal stopping rule
+"""
+
 import numpy as np
 from typing import List
 from models import House

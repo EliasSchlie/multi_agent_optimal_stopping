@@ -1,3 +1,17 @@
+"""
+House generation functions for creating diverse market scenarios.
+
+This module provides various generators for creating house populations with different
+quality distributions. These generators enable researchers to test agent policies
+under different market conditions, from uniform distributions to more realistic
+bimodal markets with distinct quality segments.
+
+Functions:
+    uniform_house_generator: Creates houses with uniform quality distribution
+    normal_house_generator: Creates houses with normal quality distribution  
+    bimodal_house_generator: Creates houses with two quality clusters
+"""
+
 import random
 from models import House
 
